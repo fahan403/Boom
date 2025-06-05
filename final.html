@@ -1,25 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Final Transmission</title>
+  <meta charset="UTF-8">
+  <title>ARG Terminal</title>
   <style>
     body {
-      background-color: black;
-      color: crimson;
+      background: black;
+      color: #00ff00;
       font-family: monospace;
-      text-align: center;
-      margin-top: 150px;
-      animation: flicker 2s infinite alternate;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @keyframes flicker {
-      0% { opacity: 1; }
-      100% { opacity: 0.4; }
+    #terminal {
+      width: 90%;
+      max-width: 800px;
+      background: #111;
+      padding: 20px;
+      box-shadow: 0 0 10px #0f0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    input {
+      background: black;
+      border: none;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 1em;
+      width: 100%;
+      outline: none;
     }
   </style>
 </head>
 <body>
-  <h1>You have uncovered too much.</h1>
-  <p>Disconnect immediately.</p>
+  <div id="terminal">
+    [?] Welcome to the ARG.
+    [?] Type 'start' to begin.
+    <div id="output"></div>
+    <input id="input" autofocus />
+  </div>
+
+  <script>
+    (function(){
+      const _0x12a3 = [
+        "value", "trim", "toLowerCase", "solvePuzzle",
+        "log", "keydown", "innerHTML", "scrollHeight", "scrollTop",
+        "getElementById", "input", "output", "Unknown command: '", "'",
+        "[+] You’ve entered the void. Type 'hint' if you're lost.",
+        "[?] Look where the sun doesn't shine.",
+        "[?] Available commands: start, hint, help, code",
+        "[!] Access code required.\\nRIDDLE: What has keys but can't open locks?\\n[!] The terminal won't help you this time.\\n[!] Try looking deeper…",
+        "[+] Correct. Type 'escape' to continue.",
+        "[SYSTEM] Escape protocol initiated. You are not safe yet...",
+        "[x] Access denied. Solve the puzzle first."
+      ];
+
+      const input = document[_0x12a3[9]](_0x12a3[10]);
+      const output = document[_0x12a3[9]](_0x12a3[11]);
+
+      const commands = {
+        start: _0x12a3[13],
+        hint: _0x12a3[14],
+        help: _0x12a3[15],
+        code: _0x12a3[16]
+      };
+
+      let puzzleSolved = false;
+
+      window[_0x12a3[3]] = function(answer) {
+        if (answer[_0x12a3[2]]() === "keyboard") {
+          if (!puzzleSolved) {
+            puzzleSolved = true;
+            output[_0x12a3[6]] += `\n(console input)\n${_0x12a3[17]}`;
+            output[_0x12a3[8]] = output[_0x12a3[7]];
+          }
+        } else {
+          console[_0x12a3[4]]("[x] That’s not correct.");
+        }
+      };
+
+      input.addEventListener(_0x12a3[5], (e) => {
+        if (e.key === "Enter") {
+          const cmd = input[_0x12a3[0]][_0x12a3[1]]()[_0x12a3[2]]();
+          input[_0x12a3[0]] = "";
+          let response;
+          if (cmd === "escape") {
+            response = puzzleSolved ? _0x12a3[18] : _0x12a3[19];
+          } else {
+            response = commands[cmd] || `${_0x12a3[12]}${cmd}${_0x12a3[13]}`;
+          }
+          output[_0x12a3[6]] += `\n> ${cmd}\n${response}`;
+          output[_0x12a3[8]] = output[_0x12a3[7]];
+        }
+      });
+
+      console[_0x12a3[4]]("%c[DEV] Hint: There's a function in the console that might help.", "color: lime");
+      console[_0x12a3[4]]("%c[DEV] Call solvePuzzle('your_answer') here.", "color: lime");
+    })();
+  </script>
 </body>
 </html>
