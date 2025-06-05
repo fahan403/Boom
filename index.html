@@ -1,247 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Realistic CTF Puzzle Simulator - Ultra Hard Mode</title>
+  <meta charset="UTF-8">
+  <title>ARG Terminal</title>
   <style>
     body {
-      background: #111;
-      color: #eee;
-      font-family: monospace, monospace;
-      margin: 0; padding: 1rem;
-    }
-    h1 {
-      text-align: center;
+      background: black;
+      color: #00ff00;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #terminal {
-      background: #222;
-      padding: 1rem;
-      max-width: 700px;
-      margin: 1rem auto;
-      border-radius: 6px;
-      height: 350px;
-      overflow-y: auto;
+      width: 90%;
+      max-width: 800px;
+      background: #111;
+      padding: 20px;
+      box-shadow: 0 0 10px #0f0;
       white-space: pre-wrap;
+      line-height: 1.5;
     }
-    #cmdInput {
-      max-width: 700px;
-      margin: 0 auto;
-      display: flex;
-      gap: 0.5rem;
-    }
-    #cmdInput input {
-      flex-grow: 1;
-      font-family: monospace;
-      font-size: 1.2rem;
-      padding: 0.5rem;
-      border-radius: 4px;
+    input {
+      background: black;
       border: none;
-      background: #222;
-      color: #eee;
-    }
-    #cmdInput button {
+      color: #00ff00;
       font-family: monospace;
-      font-size: 1.2rem;
-      padding: 0.5rem 1rem;
-      background: #4af;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      color: black;
-      font-weight: bold;
-      transition: background-color 0.3s;
+      font-size: 1em;
+      width: 100%;
+      outline: none;
     }
-    #cmdInput button:hover {
-      background: #2a8;
-    }
-    #status {
-      max-width: 700px;
-      margin: 0.5rem auto;
-      background: #222;
-      padding: 0.5rem;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-    #terminal .prompt { color: #4af; }
-    #terminal .error { color: #f66; }
-    #terminal .success { color: #6f6; }
-    #terminal .info { color: #aaa; }
   </style>
 </head>
 <body>
+  <div id="terminal">
+    [?] Welcome to the ARG.
+    [?] Type 'start' to begin.
+    <div id="output"></div>
+    <input id="input" autofocus />
+  </div>
 
-<h1>Realistic CTF Puzzle Simulator - Ultra Hard Mode</h1>
+  <script>
+    (function(){
+      const _0x12a3 = [
+        "value", "trim", "toLowerCase", "solvePuzzle",
+        "log", "keydown", "innerHTML", "scrollHeight", "scrollTop",
+        "getElementById", "input", "output", "Unknown command: '", "'",
+        "[+] You’ve entered the void. Type 'hint' if you're lost.",
+        "[?] Look where the sun doesn't shine.",
+        "[?] Available commands: start, hint, help, code",
+        "[!] Access code required.\\nRIDDLE: What has keys but can't open locks?\\n[!] The terminal won't help you this time.\\n[!] Try looking deeper…",
+        "[+] Correct. Type 'escape' to continue.",
+        "[SYSTEM] Escape protocol initiated. You are not safe yet...",
+        "[x] Access denied. Solve the puzzle first."
+      ];
 
-<div id="terminal" tabindex="0"></div>
+      const input = document[_0x12a3[9]](_0x12a3[10]);
+      const output = document[_0x12a3[9]](_0x12a3[11]);
 
-<div id="cmdInput">
-  <input id="command" placeholder="Type command here (e.g. nmap 192.168.143.85)" autocomplete="off" spellcheck="false" />
-  <button id="runBtn">Run</button>
-</div>
+      const commands = {
+        start: _0x12a3[13],
+        hint: _0x12a3[14],
+        help: _0x12a3[15],
+        code: _0x12a3[16]
+      };
 
-<div id="status"></div>
+      let puzzleSolved = false;
 
-<script>
-(() => {
-  // [... All your constants, XOR decoding, cookie functions, etc. remain the same]
-
-  // === CONTINUATION FROM YOUR CODE ===
-
-  async function runCommand(input) {
-    const rawCmd = input.trim();
-    if (!rawCmd) return;
-
-    const parts = rawCmd.split(' ').filter(Boolean);
-    const aliasCmd = parts[0].toLowerCase();
-    const cmd = findCommand(aliasCmd);
-    const args = parts.slice(1);
-
-    printTerminal('> ' + rawCmd, 'prompt');
-
-    if (!cmd) {
-      printTerminal(`Command not found: ${rawCmd}`, 'error');
-      setStatus('Try "help" for commands.', true);
-      return;
-    }
-
-    if (sshLockUntil > Date.now()) {
-      printTerminal(`SSH is temporarily locked. Try later.`, 'error');
-      setStatus('SSH locked.', true);
-      return;
-    }
-
-    if (cmd === 'nmap') {
-      // (Already written)
-    } else if (cmd === 'curl') {
-      const url = args[0];
-      if (!url) {
-        printTerminal('Usage: curl <url>', 'error');
-        setStatus('Missing URL.', true);
-        return;
-      }
-      if (url.includes(decodedIP)) {
-        if (url.includes(':8080')) {
-          printTerminal('You found the hidden service! Try FTP or SSH.', 'success');
+      window[_0x12a3[3]] = function(answer) {
+        if (answer[_0x12a3[2]]() === "keyboard") {
+          if (!puzzleSolved) {
+            puzzleSolved = true;
+            output[_0x12a3[6]] += `\n(console input)\n${_0x12a3[17]}`;
+            output[_0x12a3[8]] = output[_0x12a3[7]];
+          }
         } else {
-          printTerminal('Nothing here but Apache default page.', 'info');
+          console[_0x12a3[4]]("[x] That’s not correct.");
         }
-        setStatus('Curl completed.');
-      } else {
-        printTerminal(`Could not reach ${url}`, 'error');
-        setStatus('Curl failed.', true);
-      }
-    } else if (cmd === 'set-cookie') {
-      if (args.length === 2) {
-        try {
-          const key = atob(args[0]);
-          const val = atob(args[1]);
-          setCookie(key, val);
-          printTerminal(`Cookie set: ${key} = ${val}`, 'success');
-          setStatus('Cookie saved.');
-        } catch {
-          printTerminal('Invalid Base64 encoding.', 'error');
-          setStatus('Invalid cookie.', true);
+      };
+
+      input.addEventListener(_0x12a3[5], (e) => {
+        if (e.key === "Enter") {
+          const cmd = input[_0x12a3[0]][_0x12a3[1]]()[_0x12a3[2]]();
+          input[_0x12a3[0]] = "";
+          let response;
+          if (cmd === "escape") {
+            response = puzzleSolved ? _0x12a3[18] : _0x12a3[19];
+          } else {
+            response = commands[cmd] || `${_0x12a3[12]}${cmd}${_0x12a3[13]}`;
+          }
+          output[_0x12a3[6]] += `\n> ${cmd}\n${response}`;
+          output[_0x12a3[8]] = output[_0x12a3[7]];
         }
-      } else {
-        printTerminal('Usage: set-cookie <base64_key> <base64_value>', 'error');
-        setStatus('Bad set-cookie usage.', true);
-      }
-    } else if (cmd === 'ftp') {
-      if (!checkAccessCookie()) {
-        printTerminal('Access denied. Set proper cookie first.', 'error');
-        setStatus('No access.', true);
-        return;
-      }
-      const [user, pass] = args;
-      if (ftpUsers.includes(user)) {
-        if (ftpPasswords[user] === pass) {
-          ftpLoggedInUser = user;
-          setCookie('ftp_access', 'Granted');
-          printTerminal(`FTP login success as ${user}`, 'success');
-          setStatus('FTP access granted.');
-        } else {
-          printTerminal('Invalid FTP password.', 'error');
-          setStatus('Login failed.', true);
-        }
-      } else {
-        printTerminal('User not found.', 'error');
-      }
-    } else if (cmd === 'ssh') {
-      const [user, pass] = args;
-      if (user !== sshUser) {
-        printTerminal('Invalid SSH username.', 'error');
-        return;
-      }
-      const hash = await sha256Hex(pass || '');
-      if (hash === sshPasswordHashHex) {
-        sshLoggedIn = true;
-        printTerminal(`SSH login success as ${user}`, 'success');
-        setStatus('SSH access granted.');
-      } else {
-        sshAttempts++;
-        printTerminal('SSH login failed.', 'error');
-        if (sshAttempts >= maxSshAttempts) {
-          sshLockUntil = Date.now() + 30000;
-          printTerminal('Too many attempts. SSH locked for 30s.', 'error');
-        }
-        setStatus('SSH error.', true);
-      }
-    } else if (cmd === 'ls') {
-      if (ftpLoggedInUser || sshLoggedIn) {
-        printTerminal('flag.txt  secrets/  backup.zip', 'info');
-      } else {
-        printTerminal('Permission denied.', 'error');
-      }
-    } else if (cmd === 'get') {
-      if (!args[0]) {
-        printTerminal('Usage: get <filename>', 'error');
-        return;
-      }
-      if ((ftpLoggedInUser || sshLoggedIn) && args[0] === 'flag.txt') {
-        printTerminal('FLAG{ctf_ultra_hard_mode_unlocked}', 'success');
-        setStatus('You got the flag!');
-      } else {
-        printTerminal('Access denied or file not found.', 'error');
-      }
-    } else if (cmd === 'logout') {
-      ftpLoggedInUser = null;
-      sshLoggedIn = false;
-      printTerminal('Logged out successfully.', 'info');
-      setStatus('Session ended.');
-    } else if (cmd === 'help') {
-      printTerminal(`Available Commands:
-nmap <ip>           - Scan target
-curl <url>          - Access web service
-set-cookie <b64_k> <b64_v> - Set access cookie
-ftp <user> <pass>   - Login via FTP
-ssh <user> <pass>   - Login via SSH
-ls                  - List files (if logged in)
-get <file>          - Download file
-logout              - End session
-clear               - Clear terminal
-help                - Show this help`, 'info');
-    } else if (cmd === 'clear') {
-      clearTerminal();
-    }
-  }
+      });
 
-  runBtn.addEventListener('click', () => {
-    runCommand(cmdInput.value);
-    cmdInput.value = '';
-  });
-
-  cmdInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      runBtn.click();
-    }
-  });
-
-  // Initial load
-  printTerminal(riddleHint, 'info');
-  printPrompt();
-})();
-</script>
-
+      console[_0x12a3[4]]("%c[DEV] Hint: There's a function in the console that might help.", "color: lime");
+      console[_0x12a3[4]]("%c[DEV] Call solvePuzzle('your_answer') here.", "color: lime");
+    })();
+  </script>
 </body>
 </html>
