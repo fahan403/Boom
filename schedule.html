@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Broadcast Schedule - 1999</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff88;
+      font-family: monospace;
+      padding: 30px;
+    }
+    a {
+      color: #00ff88;
+      text-decoration: none;
+    }
+    .clue {
+      font-size: 12px;
+      color: #440000;
+      user-select: none;
+    }
+    .redacted {
+      background-color: #00ff88;
+      color: #000000;
+      padding: 0 8px;
+      cursor: pointer;
+    }
+    .redacted:hover {
+      color: #00ff88;
+      background-color: #000000;
+    }
+  </style>
+</head>
+<body>
+  <h2>Broadcast Schedule - 1999</h2>
+  <ul>
+    <li>The Morning Report</li>
+    <li>Weather and Warnings</li>
+    <li><span class="redacted" onclick="revealClue()">The Midnight Feed</span></li>
+    <li>Community Bulletin</li>
+  </ul>
+  <p class="clue" id="clue" style="display:none;">Decode: <code>VGhlIGV5ZXMgbGlnaHQgY2F1dGlvbiB3aWxsIGxlYWQgeW91IHRvIGEgYmFkIGRlc2VjdCBpbiB0aGUgbW9vbjo=</code></p>
+  <script>
+    function revealClue() {
+      document.getElementById('clue').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
