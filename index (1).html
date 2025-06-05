@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Realistic CTF Puzzle Simulator - Hard Mode + Cookie Check</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: monospace, monospace;
+    margin: 0; padding: 1rem;
+  }
+  h1, h2 {
+    text-align: center;
+  }
+  #terminal {
+    background: #222;
+    padding: 1rem;
+    max-width: 700px;
+    margin: 1rem auto;
+    border-radius: 6px;
+    height: 350px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  #cmdInput {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.5rem;
+  }
+  #cmdInput input {
+    flex-grow: 1;
+    font-family: monospace;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: none;
+    background: #222;
+    color: #eee;
+  }
+  #cmdInput button {
+    font-family: monospace;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    background: #4af;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: black;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+  #cmdInput button:hover {
+    background: #2a8;
+  }
+  #status {
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: #222;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  #terminal .prompt {
+    color: #4af;
+  }
+  #terminal .error {
+    color: #f66;
+  }
+  #terminal .success {
+    color: #6f6;
+  }
+  #terminal .info {
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<h1>Realistic CTF Puzzle Simulator - Hard Mode + Cookie Check</h1>
+
+<div id="terminal" tabindex="0"></div>
+
+<div id="cmdInput">
+  <input id="command" placeholder="Type command here (e.g. nmap 192.168.143.85)" autocomplete="off" spellcheck="false" />
+  <button id="runBtn">Run</button>
+</div>
+
+<div id="status"></div>
+
+<script>
+(() => {
+  const terminal = document.getElementById('terminal');
+  const cmdInput = document.getElementById('command');
+  const runBtn = document.getElementById('runBtn');
+  const statusDiv = document.getElementById('status');
+
+  // Base64 encoded IP
+  const targetIP = 'MTkyLjE2OC4xNDMuODU='; // 192.168.143.85
+  const decodedIP = atob(targetIP);
+
+  const ftpUsers = ['rro', 'root'];
+  const ftpPasswords = {
+    'rro': 'hunter2',
+    'root': 'toor123'
+  };
+
+  const sshUser = 'admin';
+  const sshPassword = 'S3cr3tC0d3'; // real password
+
+  // Caesar cipher encode with shift +1 (for display only)
+  function caesarEncode(str, shift = 1) {
+    return [...str].map(c => String.fromCharCode(c.charCodeAt(0) + shift)).join('');
+  }
+  function caesarDecode(str, shift = 1) {
+    return [...str].map(c => String.fromCharCode(c.charCodeAt(0) - shift)).join('');
+  }
+  const encodedSshPassword = caesarEncode(sshPassword);
+
+  let ftpLoggedInUser = null;
+  let sshLoggedIn = false;
+  let sshAttempts = 0;
+  const maxSshAttempts = 3;
+
+  // Cookie helpers
+  function setCookie(name, value, days = 1) {
+    const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+  }
+  function getCookie(name) {
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    for (const cookie of cookies) {
+      if (cookie.startsWith(name + '=')) {
+        return cookie.substring(name.length + 1);
+      }
+    }
+    return null;
+  }
+
+  function checkAccessCookie() {
+    return getCookie('access_key') === 'OpenSesame';
+  }
+  function checkFtpCookie() {
+    return getCookie('ftp_access') === 'Granted';
+  }
+
+  // Terminal print helpers
+  function printTerminal(text, type = '') {
+    const span = document.createElement('span');
+    if (type) span.classList.add(type);
+    span.textContent = text + '\n';
+    terminal.appendChild(span);
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  function printPrompt() {
+    printTerminal('> ', 'prompt');
+  }
+
+  function setStatus(msg, isError = false) {
+    statusDiv.textContent = msg;
+    statusDiv.style.color = isError ? '#f66' : '#6f6';
+  }
+
+  function clearTerminal() {
+    terminal.textContent = '';
+  }
+
+  // Decoding riddle for cookie command hint
+  const riddleHint = `
+[ RIDDLE ]
+"Speak, friend, and enter."
+Hint: The magic phrase opens the door (set cookie).
+Try to find the hidden command to set cookies!
+`;
+
+  function runCommand(input) {
+    const cmd = input.trim();
+    if (!cmd) return;
+
+    printTerminal('> ' + cmd, 'prompt');
+
+    // Hidden set-cookie command: user must discover this from a riddle
+    if (cmd.startsWith('set-cookie ')) {
+      const parts = cmd.slice(11).split('=');
+      if (parts.length !== 2) {
+        printTerminal('Usage: set-cookie <name>=<value>', 'error');
+        setStatus('Invalid cookie syntax.', true);
+        return;
+      }
+      const [name, value] = parts;
+      setCookie(name.trim(), value.trim());
+      printTerminal(`Cookie set: ${name.trim()}=${value.trim()}`, 'success');
+      setStatus('Cookie successfully set. You may now try SSH or FTP login.');
+      return;
+    }
+
+    // Commands
+
+    if (cmd === `nmap ${decodedIP}`) {
+      printTerminal(`Starting Nmap 7.80 ( https://nmap.org ) at 2025-06-05 12:00
+Nmap scan report for ${decodedIP}
+Host is up (0.0011s latency).
+PORT     STATE SERVICE VERSION
+21/tcp   open  ftp     vsftpd 3.0.3
+22/tcp   open  ssh     OpenSSH 7.9p1 Debian
+80/tcp   open  http    Apache httpd 2.4.29
+8080/tcp open  http-proxy Custom Service v1.0
+
+Nmap done: 1 IP address (1 host up) scanned in 2.34 seconds
+`, 'info');
+      setStatus('Found open ports on target. Check port 8080 for clues.');
+      return;
+    }
+
+    if (cmd === `curl http://${decodedIP}:8080` || cmd === `get /8080`) {
+      printTerminal(`HTTP/1.1 200 OK
+Content-Type: text/plain
+
+Welcome to Custom Proxy Server v1.0
+Secret Access Code: ${encodedSshPassword}
+
+Hint: To proceed, set the cookie 'access_key' to 'OpenSesame'.
+(Think of the magic phrase to unlock the door.)
+
+Try decoding the secret access code before using it to login to SSH.
+`, 'info');
+      setStatus('You found a secret access code and cookie hint.');
+      return;
+    }
+
+    // SSH login requires cookie
+    if (cmd.startsWith('ssh ')) {
+      if (!checkAccessCookie()) {
+        printTerminal('Access denied. Missing or incorrect cookie: access_key=OpenSesame', 'error');
+        setStatus('Set the correct cookie first using a hidden command.', true);
+        return;
+      }
+      if (sshAttempts >= maxSshAttempts) {
+        printTerminal('Maximum SSH login attempts exceeded. Try again later.', 'error');
+        setStatus('SSH login locked.', true);
+        return;
+      }
+      const parts = cmd.split(' ');
+      if (parts.length < 3) {
+        printTerminal('Usage: ssh <username> <password>', 'error');
+        setStatus('Invalid SSH login syntax.', true);
+        return;
+      }
+      const user = parts[1];
+      const pass = parts.slice(2).join(' ');
+      if (user === sshUser && pass === sshPassword) {
+        sshLoggedIn = true;
+        sshAttempts = 0;
+        setCookie('ftp_access', 'Granted', 1);
+        printTerminal(`Connected to SSH server at ${decodedIP}
+User '${user}' logged in successfully.
+You found FTP credentials:
+ username: rro
+ password: hunter2
+Use these credentials to login to FTP.
+`, 'success');
+        setStatus('SSH login successful. FTP access cookie granted.');
+        return;
+      } else {
+        sshAttempts++;
+        printTerminal('Permission denied, please try again.', 'error');
+        setStatus(`SSH login failed. Attempts left: ${maxSshAttempts - sshAttempts}`, true);
+        return;
+      }
+    }
+
+    // FTP login requires cookie and SSH login success
+    if (cmd.startsWith('ftp ')) {
+      if (!checkAccessCookie()) {
+        printTerminal('Access denied. Missing or incorrect cookie: access_key=OpenSesame', 'error');
+        setStatus('Set the correct cookie first.', true);
+        return;
+      }
+      if (!checkFtpCookie()) {
+        printTerminal('FTP server requires successful SSH login first.', 'error');
+        setStatus('Login to SSH to get FTP access.', true);
+        return;
+      }
+      const parts = cmd.split(' ');
+      if (parts.length < 3) {
+        printTerminal('Usage: ftp <username> <password>', 'error');
+        setStatus('Invalid FTP login syntax.', true);
+        return;
+      }
+      const user = parts[1];
+      const pass = parts.slice(2).join(' ');
+      if (ftpUsers.includes(user) && ftpPasswords[user] === pass) {
+        ftpLoggedInUser = user;
+        printTerminal(`Connected to FTP server at ${decodedIP}
+User '${user}' logged in successfully.
+Available commands: ls, get <filename>, logout
+`, 'success');
+        setStatus(`FTP login successful for user: ${user}.`);
+        return;
+      } else {
+        printTerminal('530 Login incorrect.', 'error');
+        setStatus('FTP login failed. Try again.', true);
+        return;
+      }
+    }
+
+    // FTP session commands
+    if (ftpLoggedInUser) {
+      if (cmd === 'ls') {
+        printTerminal('200 Directory listing:\nkeys.txt\nsecret.png\nreadme.txt', 'info');
+        return;
+      }
+      if (cmd.startsWith('get ')) {
+        const filename = cmd.slice(4).trim().toLowerCase();
+        if (filename === 'keys.txt') {
+          printTerminal(`200 Opening keys.txt
+This file contains:
+- SecretKey123
+- AnotherKey456
+Keep this safe!`, 'info');
+          return;
+        }
+        if (filename === 'secret.png') {
+          printTerminal('200 Opening secret.png\n[Image file cannot be displayed in terminal]', 'info');
+          return;
+        }
+        if (filename === 'readme.txt') {
+          printTerminal(`200 Opening readme.txt
+Welcome to the FTP server!
+Try to find hidden secrets in files.
+Good luck!`, 'info');
+          return;
+        }
+        printTerminal(`550 File not found: ${filename}`, 'error');
+        return;
+      }
+      if (cmd === 'logout') {
+        ftpLoggedInUser = null;
+        printTerminal('221 Goodbye.', 'info');
+        setStatus('Logged out from FTP server.');
+        return;
+      }
+    }
+
+    // Help command
+    if (cmd === 'help') {
+      printTerminal(`Available commands:
+- nmap <ip>
+- curl http://<ip>:8080
+- set-cookie <name>=<value>
+- ssh <user> <password>
+- ftp <user> <password>
+- ls (FTP session only)
+- get <filename> (FTP session only)
+- logout (FTP session only)
+- help
+`, 'info');
+      setStatus('Displayed help.');
+      return;
+    }
+
+    // Clear command
+    if (cmd === 'clear') {
+      clearTerminal();
+      setStatus('Terminal cleared.');
+      return;
+    }
+
+    // Unknown command
+    printTerminal(`Command not found: ${cmd}`, 'error');
+    setStatus('Try "help" for commands.', true);
+  }
+
+  // Initialize terminal with welcome text and riddle
+  function initTerminal() {
+    clearTerminal();
+    printTerminal(`Welcome to the Hard Mode CTF Puzzle Simulator!
+
+Your goal is to discover the secret password and FTP files.
+Hint: Try scanning ports, reading the HTTP proxy, and setting cookies.
+Type "help" for a list of commands.
+
+${riddleHint}
+`);
+    setStatus('Ready for your commands.');
+    cmdInput.focus();
+  }
+
+  runBtn.onclick = () => {
+    const cmd = cmdInput.value;
+    runCommand(cmd);
+    cmdInput.value = '';
+  };
+
+  cmdInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      runBtn.click();
+      e.preventDefault();
+    }
+  });
+
+  initTerminal();
+})();
+</script>
+
+</body>
+</html>
